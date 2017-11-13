@@ -50,3 +50,42 @@ class PageLoadTest(TestCase):
 
     def test_static_pages_load(self):
         self.assertEqual(self.c.get(reverse("professor:dashboard")).status_code, 200)
+
+
+# exercice_validation_form_validate_exercice
+"""     Tests unfinished for promotions but canceled because Celine & Adrien did them. I'll continue if I've time.
+
+
+class ExerciceFromExerciceTest(TestCase):
+    # We set up the paramters of login
+    def setUp(self):
+        self.c = Client()
+        self.c.login(username="prof", password="prof")
+
+    # We test a text question
+    def testText(self):
+        request = {"questions" : [
+        {"type" = "text","instructions":"2+2 = ?","answers"="4"}
+        ]}
+        self.assertEqual(self.c.exercice_validation_form_validate_exercice(request).yaml.result,'success')
+
+    def testMath(self):
+
+    def testGraph(self):
+
+
+# exercice_validation_form_submit
+
+class ExerciceSubmitTest(TestCase):
+    # We set up the paramters of login
+    def setUp(self):
+        self.c = Client()
+        self.c.login(username="prof", password="prof")
+
+    def testText():
+        self.c = Client()
+        self.c.login(username="prof", password="prof")
+
+    def testGraph():
+
+"""

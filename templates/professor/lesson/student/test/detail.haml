@@ -180,7 +180,6 @@
                                                   %input{type: "checkbox", display: "inline-block", height: "100%", disabled, checked}
                                                 -else
                                                   %input{type: "checkbox", display: "inline-block", height: "100%", disabled}
-
                                                 %label{text-align: "left", display: "inline-block"}=j.0
                                       -elif type == "text"
                                         %tr
@@ -225,7 +224,6 @@
                                                   %input{type: "radio", display: "inline-block", height: "100%", disabled, checked}
                                                 -else
                                                   %input{type: "radio", display: "inline-block", height: "100%", disabled}
-
                                                 %label{text-align: "left", display: "inline-block"}=j.0
                                       -elif type == "professor"
                                         %tr
@@ -256,21 +254,47 @@
                                                   ;
                                                   =y
                                                   )
-                                %a.btn.btn-default.infos{id: "{{ question.id }}"} Afficher les sources/informations
-                                %p.hiddeninfo{id: "source_{{ question.id }}"}
-                                  %u Source(s) :
-                                  -if question.source
-                                    %br {{ question.source }}
-                                  -else
-                                    %br (Pas de source)
-                                %p.hiddeninfo{id: "indication_{{ question.id }}"}
-                                  %u Indication pour les professeurs :
-                                  -if question.indication
-                                    %br {{ question.indication }}
-                                  -else
-                                    %br (Pas d'indication)
-                      -else
-                        %i Déduit depuis les autres réponses
+                                      -elif type == "fill-text-blanks"
+                                        -for ans in question.get_ans_blanks
+                                          %tr
+                                            %td{colspan: 2}
+                                              .answers-panel.panel{class: "{% if correct == 1 %}panel-success{% elif correct == 0 %}panel-danger{% else %}panel-warning{% endif %}"}
+                                                .panel-heading
+                                                  =ans.0
+                                                .panel-body.answers-panel
+                                                  %table.answers-table
+                                                    %tr
+                                                      %td.right-border{width: "50%"}
+                                                        -for stu_ans in student_answer
+                                                          -if stu_ans.0 == ans.3
+                                                            =stu_ans.1.0
+                                                      %td{width: "50%", display: "block"}
+                                                        -for answ in ans.2
+                                                            %ul
+                                                              -if ans.1 != "text"
+                                                                %li
+                                                                  \\(
+                                                                  =answ
+                                                                  \\)
+                                                                  (code latex : <code>{{ answ }}</code>)
+                                                              -else
+                                                                %li=answ
+
+                                  %a.btn.btn-default.infos{id: "{{ question.id }}"} Afficher les sources/informations
+                                  %p.hiddeninfo{id: "source_{{ question.id }}"}
+                                    %u Source(s) :
+                                    -if question.source
+                                      %br {{ question.source }}
+                                    -else
+                                      %br (Pas de source)
+                                  %p.hiddeninfo{id: "indication_{{ question.id }}"}
+                                    %u Indication pour les professeurs :
+                                    -if question.indication
+                                      %br {{ question.indication }}
+                                    -else
+                                      %br (Pas d'indication)
+                        -else
+                          %i Déduit depuis les autres réponses
 
     -else
       %p L'élève n'a pas encore commencé le test en ligne.

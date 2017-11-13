@@ -1,0 +1,55 @@
+-extends "base.haml"
+
+-load bootstrap3
+
+-block content
+  .panel.panel-default
+    .panel-heading{id: "id_question_generator"} Outil de création de questions
+    -if form.errors
+      .alert.alert-danger{:id => "id_error_panel"}
+        - for field in form
+          - if field.errors
+            = field.label_tag
+            = field.errors
+
+    .panel-body
+      .left.column
+      Subject
+      .subject_menu
+        %select{:name => "subject"}
+          %option subject1
+          %option subject2
+
+      Assessment type
+      .assessment_menu{:name => "assessment"}
+        %select
+          %option assessment1
+          %option assessment2
+
+      Compétence
+      .skill_menu{:skill => "skill"}
+        %select
+          %option Problème arithmétique
+
+      %form#parameters-form{action: "{{ app_path }}", method: "post", role: "form"}
+        -csrf_token
+
+        -for field in form
+          =field.label_tag
+          =field
+          %br/
+        -# Not needed now
+          .input_menu
+            A
+            %input{:type => "integer", :name => "input_a"}
+            B
+            %input{:type => "integer", :name => "input_b"}
+            C
+            %input{:type => "integer", :name => "input_c"}
+            &nbsp
+        .submit-row
+          %label
+            &nbsp
+          %input.btn.btn-primary{type: "submit", value: "Créer", id: "id_generate_button"}
+
+

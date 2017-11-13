@@ -131,12 +131,12 @@ def lesson_add(request):
     :param request:
     :return:
     """
-    form = LessonForm(request.POST) if request.method == "POST" else LessonForm()
-
-    if form.is_valid():
-        lesson = form.save()
-        lesson.professors.add(request.user.professor)
-        return HttpResponseRedirect(reverse("professor:lesson_student_add", args=(lesson.pk,)))
+    form = LessonForm(request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            lesson = form.save()
+            lesson.professors.add(request.user.professor)
+            return HttpResponseRedirect(reverse("professor:lesson_student_add", args=(lesson.pk,)))
 
     return render(request, "professor/lesson/create.haml", {
         "form": form,
@@ -1407,6 +1407,17 @@ def exercice_validation_form_validate_exercice(request):
                 "answers": "",
             }
 
+        elif question["type"] == "fill-text-blanks":
+            question[question["instructions"]] = {
+                "type": question["type"],
+                "answers": question["answers"],
+            }
+        elif question["type"] == "fill-table-blanks":
+            question[question["instructions"]] = {
+                "type": question["type"],
+                "table": question["table"],
+                "answers": question["answers"],
+            }
         else:
             answers = OrderedDict()
             for x in question["answers"]:
@@ -1518,7 +1529,17 @@ def exercice_validation_form_submit(request, pk=None):
                     "type": question["type"],
                     "answers": [x["text"] for x in question["answers"]],
                 }
-
+            elif question["type"] == "fill-text-blanks":
+                new_question_answers = {
+                    "type": question["type"],
+                    "answers": [x for x in question["answers"]],
+                }
+            elif question["type"] == "fill-table-blanks":
+                new_question_answers = {
+                    "type": question["type"],
+                    "table": question["table"],
+                    "answers": [x for x in question["answers"]],
+                }
             elif question["type"].startswith("math"):
                 new_question_answers = {
                     "type": question["type"],

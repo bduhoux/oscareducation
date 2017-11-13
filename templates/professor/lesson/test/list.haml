@@ -21,7 +21,7 @@
       %a.real-link{href: "{% url 'professor:lesson_detail' lesson.pk %}"}
         Mes élèves
     %li.active{role: "presentation"}
-      %a.real-link{href: "{% url 'professor:lesson_test_list' lesson.pk %}"}
+      %a.real-link{href: "{% url 'professor:lesson_test_list' lesson.pk %}", id: "id_my_test_button"}
         Mes Tests
     %li{role: "presentation"}
       %a.real-link{href: "{% url 'professor:lesson_detail' lesson.pk %}#heatmap"}
@@ -32,7 +32,7 @@
   .container-fluid.boxclassetitle
     .pull-right
       %a{href: "{% url 'professor:lesson_test_add' lesson.pk %}"}
-        %img.icon{src: "{% static 'img/icons/add.png' %}", data-toggle: "tooltip", data-placement: "top", title: "ajouter un test"}
+        %img.icon{src: "{% static 'img/icons/add.png' %}", data-toggle: "tooltip", data-placement: "top", title: "ajouter un test", id: "id_add_test_button"}
 
 
   .ligneorangefine

@@ -43,6 +43,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'behave_django',
     'authentification',
     'bootstrap3',
     'django_extensions',

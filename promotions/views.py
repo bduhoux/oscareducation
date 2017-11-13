@@ -131,12 +131,12 @@ def lesson_add(request):
     :param request:
     :return:
     """
-    form = LessonForm(request.POST) if request.method == "POST" else LessonForm()
-
-    if form.is_valid():
-        lesson = form.save()
-        lesson.professors.add(request.user.professor)
-        return HttpResponseRedirect(reverse("professor:lesson_student_add", args=(lesson.pk,)))
+    form = LessonForm(request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            lesson = form.save()
+            lesson.professors.add(request.user.professor)
+            return HttpResponseRedirect(reverse("professor:lesson_student_add", args=(lesson.pk,)))
 
     return render(request, "professor/lesson/create.haml", {
         "form": form,

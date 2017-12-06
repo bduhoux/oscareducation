@@ -34,7 +34,7 @@
       .container-fluid.boxclasse
         .list-group
           -for lesson in lessons
-            %a.list-group-item{href: "{% url 'professor:lesson_detail' lesson.pk %}"}
+            %a.list-group-item{href: "{% url 'professor:lesson_detail' lesson.pk %}", data-purpose: "class-button"}
               =lesson.name|capfirst
 
           -empty

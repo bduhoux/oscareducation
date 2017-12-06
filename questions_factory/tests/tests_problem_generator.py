@@ -14,17 +14,18 @@ class UnexpectedBehaviour(TestCase):
     def test_problem_raises_value_error(self):
         with self.assertRaises(ValueError) as context:
             problem_set = problem_settings("foo", "bar", "Interrzger", "Ratdqdional", [9687, 20], None)
-            ProblemGenerator.factory(json.dumps(problem_set))
+            ProblemGenerator.factory(problem_set)
         self.assertTrue('Wrong problem type' in context.exception)
 
 
 def problem_settings(problem, problem_description, domain, image, range, val):
     settings = {
-        "problem": problem,
+        "generator_name": problem,
         "desc": problem_description,
         "domain": domain,
         "image": image,
         "range": range,
-        "val": val
+        "val": val,
+        "nb_decimal": "3"
     }
     return settings

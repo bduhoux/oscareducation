@@ -7,61 +7,53 @@
         .well
           =new_test_exercise.exercice.context|safe
       %h2 Choisissez les questions que vous voulez garder
-      -for question in questions
-        .panel.panel-success
-          .panel-heading
-            Question générée
-          .panel-body
-            -if question.description
-              .well.question-description
-                =question.description|safe
-            -if question.source
-              %p
-                %b Source(s) :
-              .well.questions-source
-                =question.source|safe
-            -with answer=question.get_answer
-              -include "professor/exercice/exercice_with_answers_rendering.haml"
-            -#%button.btn-primary{type: "submit", onclick: "submitQuestion()"}
-              Choisir cet exercice
-          %form{method: "POST", enctype: 'application/json'}
-            -csrf_token
-            %input{type: "hidden", name: "question_description", value: "{{question.description}}"}
-            %input{type: "hidden", name: "question_source", value: "{{question.source}}"}
-            %input{type: "hidden", name: "question_answer", value: "{{question.answer}}"}
-            %input{type: "hidden", name: "exercise_id", value: "{{ new_test_exercise.id }}"}
-            %button.btn-primary{type: "submit"}
-              Choisir cet exercice
+      #question-list
+        -include 'questions_factory/_questions.haml'
 
-
-      %h3
+    .panel-body.text-center
+      -#%a.btn.btn-primary{id:"more-question-btn"}
+        Générer plus de question
+      %a.btn.btn-info.btn-lg{href: "{% url 'professor:lesson_test_online_exercices' lesson_id test_id %}", id:"return-to-test-modify"}
         Revenir au test
-        .panel-body
-          %a.btn.btn-primary{href: "{% url 'professor:lesson_test_online_exercices' lesson_id test_id %}", id:"return-to-test-modify"}
-            Revenir au test
+
 -block javascript
   :javascript
 
-    $(function() {
+    $('#more-question-btn').click( function(e) {
+      e.preventDefault();
+      more_questions();
+      return false;
+    } );
 
-      $('form').submit(function(){
-        var form = $(this)
+    function more_questions(){
+      // TODO
+    }
+
+    $(function() {
+      $('form').submit(function(event){
+        event.preventDefault();
+        $(this).find(':input[type=submit]').prop('disabled', true);
+        var divForm = $(this).parent();
         $.ajax({
           type: 'post',
           url: 'submit/',
           data: $(this).serialize(),
           success: function (data) {
-            console.log(data.msg);
-            form.hide()
+            divForm.animate({
+              height: "0px"
+            }, 500, function() {
+              // Animation complete.
+              divForm.remove();
+            });
           }
         });
-        return false;
       });
+
 
       {% for exercice in new_test_exercise.skill.exercice_set.all %}
       {% for _, question in exercice.get_questions.items %}
       {% if question.type == "graph" %}
-      new Graph('graph-' + {{ forloop.counter0 }})
+        new Graph('graph-' + {{ forloop.counter0 }})
       {% endif %}
       {% endfor %}
       {% endfor %}

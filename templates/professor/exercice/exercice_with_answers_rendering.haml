@@ -52,17 +52,45 @@
           %p
             %i A corriger par le professeur
       -elif answer.type == "fill-text-blanks"
-        -for ans in question.get_ans_blanks
-          =ans.0
-          %input{id: "{{ forloop.counter0 }}", name: "{{ forloop.counter0 }}", type: "text", disabled: "disabled"}
+        -for ans in answer.answers
+          =ans.text.0
+          %input{id: "{{ forloop.counter0 }}", name: "{{ forloop.counter0 }}", value: "#[{{ forloop.counter }}]#", type: "text", disabled: "disabled", style: "text-align:center"}
+          =ans.text.1
           %div{style: "margin-left: 20px; margin-top: 10px"}
             %p Réponses correctes :
             %ul
-              -for answ in ans.2
-                -if ans.1 != "text"
-                  %li \({{answ}}\)
+              -for answ in ans.answers
+                -if ans.type != "text"
+                  %li \({{answ.latex}}\)
+                  -if user.is_superuser
+                    Code latex: <code>{{answ.latex}}</code> (visible que par les admins)
                 -else
-                  %li=answ
-        =question.get_last_text_blanks
+                  %li=answ.text
+        -elif answer.type == "fill-table-blanks"
+          .well.question-description
+            -with toploop_counter0=forloop.counter0
+              %table.table.table-bordered{style: "table-layout:fixed"}
+                %tbody
+                -for row in answer.table
+                  %tr
+                  -for col in row
+                    -if col.blank
+                      %td
+                        %input{id: "fill-{{ toploop_counter0 }}-{{ forloop.counter0 }}", name: "fill-{{ toploop_counter0 }}-{{ forloop.counter0 }}", type: "text", value: "{{ col.text }}", autocomplete: "off",  disabled: "disabled", style: "text-align:center;width:100%"}
+                    -else
+                      %td= col.text
+
+          -for ans in answer.answers
+            %input{id: "{{ forloop.counter0 }}", name: "{{ forloop.counter0 }}", value: "#[{{ forloop.counter }}]#", type: "text", disabled: "disabled", style: "text-align:center"}
+            %div{style: "margin-left: 20px; margin-top: 10px"}
+              %p Réponses correctes :
+              %ul
+                -for answ in ans.answers
+                  -if ans.type != "text"
+                    %li \({{answ.latex}}\)
+                    -if user.is_superuser
+                      Code latex: <code>{{answ.latex}}</code> (visible que par les admins)
+                  -else
+                    %li=answ.text
       -else
         =answer.type

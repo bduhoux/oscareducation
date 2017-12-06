@@ -100,15 +100,17 @@
               .form-group{ng-if : "question.type == \"fill-text-blanks\""}
                 %label.control-label.col-sm-2 Texte à compléter
                 .col-sm-1
-                  %button.btn.btn-success{ng-click: "addAnswerField(question)", type: "button", data-toggle: "tooltip", data-placement: "top", title: "Ajouter un champ"}
+                  %button.btn.btn-success{ng-click: "addAnswerField(question, topIndex)", type: "button", data-toggle: "tooltip", data-placement: "top", title: "Ajouter un champ"}
                     %span.glyphicon.glyphicon-plus
                 .col-sm-9
-                  %textarea.form-control{id: "blank-text", type: "text", ng-model: "question.instructions", ng-required: "true", :rows => 3}
+                  %textarea.form-control{id: "blank-text{& topIndex &}", type: "text", ng-model: "question.instructions", ng-required: "true", :rows => 3}
+                  %p.help-block Pour ajouter un champ, appuyez sur le "+" à gauche
               //Table-filling form
               .form-group{ng-if: "question.type == \"fill-table-blanks\""}
                 .col-sm-2
                   %label.control-label.col-sm-2 Tableau
                 .col-sm-10
+                  %p.help-block Appuyez sur "Générer les champs" une fois votre tableau prêt pour que les cases vides puissent être remplies par les élèves.
                   %button.btn.btn-success.sm-margin{ng-click: "addColumnTableBlank(table)", type: "button"} Nouvelle colonne
                   %div.table-responsive
                     %table.fillparent{ng-init:"table = question.table"}
@@ -122,18 +124,21 @@
                           %button.btn.btn-danger{type: "button", ng-if: "table.length > 1", ng-click: "removeRowTableBlank(table, x)"}
                             %span.glyphicon.glyphicon-remove
                         %td{ng-repeat: "column in row track by $index", ng-init:"y = $index.toString()"}
-                          %input.form-control{type: "text", ng-model: "table[x][y]"}
+                          %input.form-control{type: "text", ng-model: "table[x][y]", ng-change:"onQuestionTableChange(table)"}
                       %tr
                         %td
                           %button.btn.btn-success{ng-click: "addRowTableBlank(table)", type: "button"}
-                            %span.glyphicon.glyphicon-plus
-
-              .form-group{ng-if : "question.type == \"fill-text-blanks\""}
+                            %span.glyphicon.glyphicon-plus                      	
+                        	
+              .form-group{ng-if : "question.type.startsWith(\"fill-\")"}
                 %label.control-label.col-sm-2 Réponses
                 .col-sm-10
-                  %button.btn.btn-success{id: 'parserField', ng-click: "parseFieldsInQuestion(topIndex, question)", type: "button"}
-                    Générer les champs
-                  %ul.list-group{ng-if: "question.type == \"fill-text-blanks\""}
+                	%span
+		                %button.btn.btn-success{ng-disabled:"question.type == \"fill-text-blanks\" && !isPlaceholder(question) || (question.type == \"fill-table-blanks\" && tableHasField(question.table))", id: 'parserField', ng-click: "parseFieldsInQuestion(topIndex, question)", type: "button"}
+		                  Générer les champs
+		                %p.help-block{ng-hide: "(question.type == \"fill-text-blanks\" && isPlaceholder(question))||(question.type == \"fill-table-blanks\" && !tableHasField(question.table))"} 
+		                	Aucun champ détecté
+                  %ul.list-group{ng-if: "question.type.startsWith(\"fill-\")"}
                     %li.list-group-item{ng-repeat: "answer in question.answers", ng-init: "answerIndex = ($index+1).toString()"}
                       %p
                         %label.control-label Champ {& answerIndex &}
@@ -147,7 +152,7 @@
                             %option{value: "math-simple"} Réponse mathématique simple
                             %option{value: "math-advanced"} Réponse mathématique complexe
                       %ul.list-group
-                        %li.list-group-item{ng-repeat: "possible in answer.answers track by $index", ng-init: "subAnswerIndex = $index.toString()"}
+                        %li.list-group-item{ng-repeat: "possible in answer.answers", ng-init: "subAnswerIndex = $index.toString()"}
                           Réponse possible
                           .form-group
                             .col-sm-10
@@ -178,7 +183,7 @@
                   %input.form-control{type: "text", ng-model: "question.indication", ng-required: "false"}
 
             %ul.list-group
-              %li.list-group-item{ng-if: "question.type != \"professor\"&& question.type != \"fill-text-blanks\"", ng-repeat: "answer in question.answers", ng-init: "answerIndex = $index.toString()"}
+              %li.list-group-item{ng-if: "question.type != \"professor\"&& !question.type.startsWith(\"fill-\")", ng-repeat: "answer in question.answers", ng-init: "answerIndex = $index.toString()"}
                 .form-horizontal{ng-if: "question.type != \"graph\""}
                   .form-group
                     %label.col-sm-2.control-label Réponse possible :
@@ -220,7 +225,7 @@
                         %input.form-control{type: "number", ng-required: "true", placeholder: "0", ng-model: "answer.graph.coordinates.Y"}
 
 
-            %button.btn.btn-success.btn-sm{ng-if: "question.type != \"professor\" && question.type != \"fill-text-blanks\"", ng-click: "addAnswer(topIndex, question)", type: "button"}
+            %button.btn.btn-success.btn-sm{ng-if: "question.type != \"professor\" && !question.type.startsWith(\"fill-\")", ng-click: "addAnswer(topIndex, question)", type: "button"}
               %span.glyphicon.glyphicon-plus
               nouvelle réponse possible
 
@@ -252,8 +257,7 @@
           #exercice-rendering-html.well{ng-if: "htmlRendering != \"\" || base64img != \"\""}
             %img{ng-if: "base64img", src: "{& base64img &}", class: "img-responsive"}
             %div{ng-bind-html: "htmlRendering"}
-            professorExerciceValidationForm
-            %br
+
           #exercice-rendering-yaml{ng-if: "yamlRendering != \"\"", ng-bind-html: "yamlRendering"}
   :css
     body {

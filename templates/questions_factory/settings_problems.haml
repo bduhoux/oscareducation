@@ -7,49 +7,42 @@
     .panel-heading{id: "id_question_generator"} Outil de création de questions
     -if form.errors
       .alert.alert-danger{:id => "id_error_panel"}
-        - for field in form
-          - if field.errors
-            = field.label_tag
-            = field.errors
+        -for field in form
+          -if field.errors
+            =field.label_tag
+            =field.errors
 
     .panel-body
       .left.column
-      Subject
-      .subject_menu
-        %select{:name => "subject"}
-          %option subject1
-          %option subject2
 
-      Assessment type
-      .assessment_menu{:name => "assessment"}
-        %select
-          %option assessment1
-          %option assessment2
-
-      Compétence
-      .skill_menu{:skill => "skill"}
-        %select
-          %option Problème arithmétique
-
-      %form#parameters-form{action: "{{ app_path }}", method: "post", role: "form"}
+      %form#parameters-form{action: "{{ app_path }}", method: "POST", role: "form"}
         -csrf_token
 
         -for field in form
-          =field.label_tag
-          =field
-          %br/
-        -# Not needed now
-          .input_menu
-            A
-            %input{:type => "integer", :name => "input_a"}
-            B
-            %input{:type => "integer", :name => "input_b"}
-            C
-            %input{:type => "integer", :name => "input_c"}
-            &nbsp
-        .submit-row
-          %label
-            &nbsp
-          %input.btn.btn-primary{type: "submit", value: "Créer", id: "id_generate_button"}
+          -if field.name in mask_field
+            .form-group
+              =field.label_tag
+              =field
+        %hr
+        #container-settings
+          -include 'questions_factory/_generator_form.haml'
 
+-block javascript
+  :javascript
+    function get_form() {
+      $.ajax({
+          type: 'GET',
+          url: "form/" + $("#id_generator_name").val() + "/"
+        }).done(function ( data ) {
+           $( "#container-settings" ).html( data );
+        });
+    }
 
+    $('#id_generator_name').on('change', function(){
+        get_form();
+      });
+    {% if valid %}
+      $(function() {
+         get_form();
+      });
+    {% endif %}

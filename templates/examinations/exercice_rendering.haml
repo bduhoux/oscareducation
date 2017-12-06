@@ -45,13 +45,38 @@
 						%input.form-control{id: "{{ forloop.counter0 }}", name: "{{ forloop.counter0 }}", type: "text", autocomplete: "off"}
 						-#%textarea.form-control{id: "{{ forloop.counter0 }}", name: "{{ forloop.counter0 }}", rows: "5"}
 					-elif answer.type == "fill-text-blanks"
-						%br
 						.well.question-description
 							-with toploop_counter0=forloop.counter0
-								-for text in question.get_text_blanks
-									=text
-									%input{id: "fill-{{ toploop_counter0 }}-{{ forloop.counter0 }}", name: "fill-{{ toploop_counter0 }}-{{ forloop.counter0 }}", type: "text", autocomplete: "off"}
-								=question.get_last_text_blanks
+								-for ans in answer.answers
+									=ans.text.0
+									-with inloop_counter0=forloop.counter0
+			              -if ans.type == "math" or ans.type == "math-simple" or ans.type == "math-advanced"
+			                %span
+			                  %textarea.keyboard
+			                  %span.mathquill{data-keyboard-type: "{{ ans.type }}", style: "width:241px"}
+			                  %input.form-control.hidden-math-form{id: "fill-{{ toploop_counter0 }}-{{ inloop_counter0 }}", name: "fill-{{ toploop_counter0 }}-{{ inloop_counter0 }}", type: "text", autocomplete: "off"}
+			              -else
+			                %input{id: "fill-{{ toploop_counter0 }}-{{ inloop_counter0 }}", name: "fill-{{ toploop_counter0 }}-{{ inloop_counter0 }}", type: "text", autocomplete: "off"}
+			            =ans.text.1
+					-elif answer.type == "fill-table-blanks"
+						.well.question-description
+							-with toploop_counter0=forloop.counter0
+								%table.table.table-bordered{style: "table-layout:fixed"}
+									%tbody
+									-for row in answer.table
+										%tr
+										-for col in row
+			                -if col.blank
+			                  %td
+			                    -if col.blank.type == "math" or col.blank.type  == "math-simple" or col.blank.type  == "math-advanced"
+			                      %span
+			                        %textarea.keyboard
+			                        %span.mathquill{data-keyboard-type: "{{ col.blank.type }}", style: "width:100%"}
+			                        %input.form-control.hidden-math-form{id: "fill-{{ toploop_counter0 }}-{{ col.index }}", name: "fill-{{ toploop_counter0 }}-{{ col.index }}", type: "text", autocomplete: "off"}
+			                    -else
+			                      %input{id: "fill-{{ toploop_counter0 }}-{{ col.index }}", name: "fill-{{ toploop_counter0 }}-{{ col.index }}", type: "text", autocomplete: "off", style: "width:100%"}
+			                -else
+			                  %td= col.text
 					-else
 						=answer.type
 

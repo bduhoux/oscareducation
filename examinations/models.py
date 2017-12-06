@@ -106,34 +106,6 @@ class Question(models.Model):
         yaml_answer = self.get_answer()
         return yaml_answer["answers"]
 
-    def get_text_blanks(self):
-        """Get a list of the texts separated by blanks except the last text"""
-        temp = re.split(r'#\[\d\]#',self.description)
-        return temp[0:len(temp)-1]
-
-    def get_last_text_blanks(self):
-        """Get the text after the last blank"""
-        temp = re.split(r'#\[\d\]#',self.description)
-        return temp[len(temp)-1]
-
-    def get_ans_blanks(self):
-        """Get a list of [the text before the blank, the type of answer, the possible correct answers, the index of blank]"""
-        tab = []
-        temp = self.get_text_blanks()
-        answer = self.get_answer()['answers']
-
-        i=0
-        for answers in answer:
-            t = []
-            for ans in answers['answers']:
-                if answers['type'] == 'text':
-                    t.append(ans['text'])
-                else:
-                    t.append(ans['latex'])
-            tab.append([temp[i],answers['type'],t,i])
-            i+=1
-        return tab
-
     def get_answers_extracted(self):
         return self.get_answers().items()
 
@@ -252,7 +224,7 @@ class Question(models.Model):
             # No automatic verification to perform if corrected by a Professor
             return -1
 
-        elif evaluation_type == "fill-text-blanks":
+        elif evaluation_type == "fill-text-blanks" or evaluation_type == "fill-table-blanks":
             ok = 1
             num_rep = 0
             for num in response:
@@ -275,6 +247,7 @@ class Question(models.Model):
 
             return ok
         # No automatic correction type found, not corrected by default
+
         else:
             return -1
 
@@ -313,7 +286,7 @@ class Answer(models.Model):
         for question in self.test_exercice.exercice.get_questions():
             student_answers = self.get_answers()[str(index)].get("response")
 
-            if question.get_type() == "fill-text-blanks":
+            if question.get_type() == "fill-text-blanks" or question.get_type() == "fill-table-blanks":
                 student_answers = self.get_blanks_answers(student_answers, index)
 
             questions_with_answers.append(
@@ -329,10 +302,8 @@ class Answer(models.Model):
     def get_blanks_answers(self, student_answers, index):
         """Get the list of student answers associated with the index number [[index,student_answer]]"""
         tab = []
-        print(student_answers)
         for i in range(index,index+len(student_answers)):
             tab.append([i-index,student_answers[str(i)]["response_blank"]])
-        print tab
         return tab
 
     def contains_professor_not_assessed(self):
@@ -399,6 +370,25 @@ class Answer(models.Model):
     def get_answers(self):
         """Get the list of answers"""
         return json.loads(self.raw_answer)[0]
+
+    def get_answers_blanks_tab(self):
+        """Get the list of answers"""
+        ans = json.loads(self.raw_answer)[0]
+        q = self.test_exercice.exercice.get_questions()
+        quest = [None]*len(ans)
+        j = 0
+        print(ans)
+        for index in ans:
+            answers = ans[index]['response']
+            resp = [None] * len(answers)
+            i = 0
+            if q[j].get_type() == 'fill-text-blanks' or q[j].get_type() == 'fill-table-blanks':
+                for stu_ans in answers:
+                    resp[i] = [int(stu_ans)-int(index), answers[stu_ans]]
+                    i += 1
+            quest[j] = [int(index), resp, int(ans[index]['correct'])]
+            j += 1
+        return quest
 
 
 class TestStudent(models.Model):

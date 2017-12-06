@@ -14,17 +14,6 @@ Feature: Login
     When I submit my password
     Then I am redirected to the professor home page
 
-  Scenario: Login as a student
-
-    Given I am an existing non logged student
-    Given I am on the login page
-    Then I enter my username
-    When I submit my username
-    Then I am on the password page
-    Then I enter my password
-    When I submit my password
-    Then I am redirected to the student home page
-
   Scenario: Login with wrong password
     Given I am an existing non logged professor
     Given I am on the login page

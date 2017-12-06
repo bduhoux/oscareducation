@@ -10,10 +10,10 @@ function validateExerciceController($scope, $http, $sce, $timeout, $location) {
 
     };
 
-    $scope.addAnswerField = function(question){
-  			elem = document.getElementById("blank-text");
+    $scope.addAnswerField = function(question, index){
+  			elem = document.getElementById("blank-text"+index);
   			text = elem.value;
-  			matches = text.match(/#\[\d]#/g);
+  			matches = text.match(/#\[\d+]#/g);
   			if (matches === null) { //If it is the first field
   				text += "#[1]#";
   				elem.value = text; //Update input form
@@ -30,23 +30,75 @@ function validateExerciceController($scope, $http, $sce, $timeout, $location) {
   			    elem.value = newText //Update input form
   			}
   			question["instructions"] = elem.value; //Update object for DB
-  			elem.focus();//Request focus on text input
+  			elem.focus();//Request focus on text inputfo
+            console.log(question)
     };
 
+    $scope.parseTableQuestion = function(question){
+        var counter = 0;
+        for(var i = 0; i < question.table.length; i++){
+          for(var j = 0; j < question.table[i].length; j++){
+              var textTrimmed = question.table[i][j].replace(/\s/g,'');
+              console.log("Debug parsable table");
+              console.log(textTrimmed);
+              var matches = textTrimmed.match(/#\[\d]#/g);
+              console.log(matches);
+              if(textTrimmed.length == 0 || matches != null){
+                  counter++;
+                  question.table[i][j] = "#["+counter+"]#";
+              }
+          }
+        }
+        return counter;
+    };
+
+    $scope.isPlaceholder = function (question) {
+        if (question["answers"].length > 0){ //If we have fields, don't disable the button
+            return true;
+        }
+        if(question["instructions"] == undefined) {
+            //If for some reason the user erased the instructions, no placeholder
+            return false;
+        }
+        matches = question["instructions"].match(/#\[\d]#/g);
+        return matches != null; //If no match, no placeholder
+    }
+
     $scope.parseFieldsInQuestion = function (topIndex, question) {
-        elem = document.getElementById("blank-text");
-        text = elem.value;
-        //console.log(question);
-        var numberBlank = text.match(/#\[/g).length;
-        for(var i = question["answers"].length; i < numberBlank; i++){
-            question["answers"].push({
-                type:"text", //start as text by default
-                answers:[{
-                  text:"",
-                  latex:""
-                }]
-            });
-            $scope.renderMathquil(topIndex, i, question, 0);
+        var numberBlank = 0;
+        if(question.type == "fill-table-blanks"){
+            numberBlank = $scope.parseTableQuestion(question);
+
+        }else {
+            var elem = document.getElementById("blank-text"+topIndex);
+            var text = elem.value;
+            //console.log(question);
+            var matches = text.match(/#\[/g);
+            if (matches == null) { //No placeholders in the instructions
+                for (i = 0; i < question["answers"].length; i++) {
+                    question["answers"].splice(i, 1); //Remove the field
+                    $scope.renderMathquil(topIndex, i, question, 0);
+                }
+                return; //Quit !
+            }
+            numberBlank = matches.length;
+        }
+        if (numberBlank > question["answers"].length) { //If we have blanks to add
+            for (var i = question["answers"].length; i < numberBlank; i++) {
+                question["answers"].push({
+                    type: "text", //start as text by default
+                    answers: [{
+                        text: "",
+                        latex: ""
+                    }]
+                });
+                $scope.renderMathquil(topIndex, i, question, 0);
+            }
+        }else if(numberBlank < question["answers"].length){ //If we have blanks to remove
+            for (i = numberBlank; i < question["answers"].length; i++) {
+                question["answers"].splice(i, 1); //Remove the field
+                $scope.renderMathquil(topIndex, i, question, 0);
+            }
         }
 
     };
@@ -78,19 +130,24 @@ function validateExerciceController($scope, $http, $sce, $timeout, $location) {
 
     /**
      * when question.type == "fill-table-blanks"
-     * add a row in the table
+     * add a row in the table, max of 10
      *
      * @param table the table object
      */
     $scope.addRowTableBlank = function (table){
+    		ROW_LIMIT = 10;
         nRows = table.length;
         nCols = table[0].length;
-
-        newLine = [];
-        for(var i = 0; i < nCols; i++){
-            newLine.push("")
+				if (nRows < ROW_LIMIT){
+		      newLine = [];
+		      for(var i = 0; i < nCols; i++){
+		          newLine.push("");
+		      }
+		      table.push(newLine);
         }
-        table.push(newLine);
+        else{
+        	alert("Impossible d'avoir plus de " + ROW_LIMIT + " lignes par tableau.");
+        }
     };
 
     /**
@@ -100,16 +157,17 @@ function validateExerciceController($scope, $http, $sce, $timeout, $location) {
      * @param table the table object
      */
     $scope.addColumnTableBlank = function (table){
+    		COLUMN_LIMIT = 10;
         nRows = table.length;
         nCols = table[0].length;
 
-        if(nCols < 10) {
+        if(nCols < COLUMN_LIMIT) {
             for (var i = 0; i < nRows; i++) {
                 table[i].push("");
             }
         }
         else{
-            alert("Impossible d'avoir plus de dix colonnes par tableau")
+            alert("Impossible d'avoir plus de " + COLUMN_LIMIT + " colonnes par tableau");
         }
     };
 
@@ -121,10 +179,12 @@ function validateExerciceController($scope, $http, $sce, $timeout, $location) {
      * @param x index of row to remove
      */
     $scope.removeRowTableBlank = function (table, x){
-        if(table.length > 1)
+        if(table.length > 1){
             table.splice(x,1);
-        else
+        }
+        else{
             $scope.flag = true;
+        }
     };
 
     /**
@@ -141,6 +201,20 @@ function validateExerciceController($scope, $http, $sce, $timeout, $location) {
             }
         }
     };
+    
+    $scope.tableHasField =  function(table){
+    	for(var i = 0; i < table.length; i++){
+    		for(var j = 0; j < table[i].length; j++){
+    			matches = table[i][j].match(/#\[\d+]#/g);
+					if (table[i][j] == "" || matches != null) {
+						return false;
+					}
+    		}
+    	}
+    	return true;
+    };
+
+
 
     $scope.validateExercice = function() {
         $http.post("validate/", {"questions": $scope.questions, "testable_online": $scope.testable_online})
@@ -250,7 +324,7 @@ function validateExerciceController($scope, $http, $sce, $timeout, $location) {
         if (question.type.startsWith("fill")){
             question.answers = [];
             if(question.type === "fill-table-blanks"){
-                question.table = [["",""],["",""]]; //Start as a 2*2 (better UX)
+                question.table =  [["",""],["",""]];
             }
             $timeout(function() {
                 console.log("fill text blanks rendering mathquill");

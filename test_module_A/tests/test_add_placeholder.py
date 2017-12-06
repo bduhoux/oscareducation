@@ -45,7 +45,7 @@ class TestAddPlaceholder(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-success").send_keys(Keys.ENTER)
         text = driver.find_element_by_id("blank-text").get_attribute('value')
         self.assertEqual(text,"#[1]##[2]#")
-        
+
     def is_element_present(self, how, what):
         try: self.driver.find_element(by=how, value=what)
         except NoSuchElementException as e: return False

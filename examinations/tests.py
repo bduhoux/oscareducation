@@ -58,15 +58,18 @@ def test_render_always_lower_case():
 
 
 # evaluate
-
+"""
 class evaluateTest(TestCase):
     def setUp(self):
 
 # get_answers
 
 class answersTest(TestCase):
-    def setUp(self)
+    def setUp(self):
+
 # getOccurence
 
 class getOccurenceTest(TestCase):
     def setUp(self):
+
+        """
